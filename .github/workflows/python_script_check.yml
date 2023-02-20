@@ -18,6 +18,6 @@ jobs:
       - run: mypy --install-types --non-interactive . || true
       - run: pytest . || true
       - run: pytest --doctest-modules . || true
-      - run: shopt -s globstar && pyupgrade --py36-plus test.py || true
+      - run: shopt -s globstar && pyupgrade --py36-plus python-apps\.github\workflows\test.py || true
       - run: safety check
       
