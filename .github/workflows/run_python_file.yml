@@ -1,0 +1,63 @@
+name: Analyze
+on:
+  push:
+    branches:
+      - main
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+      - name: Analyze API and Python files
+        run: |
+          python script.py                       :# python_file_name_to_be_checked
+      - name: Run Python script
+        run: |
+          import yaml
+          import os
+          import subprocess
+          basedir = "."
+          dirs = os.listdir(basedir)
+          # print(dirs)
+          # basename = "testing"
+          for basename in dirs:
+              if basename == ".gitignore" or basename == ".github" or basename == "README.md" or basename == ".git" or basename == "unsupported" or ".swp" in basename or ".swo" in basename:
+                  continue
+              print(f"\n[DEBUG] Analyzing: {basename}")
+              try:
+                  versions = os.listdir("./%s" % basename)
+              except NotADirectoryError:
+                  continue
+              for version in versions:
+                  filepath = "%s/%s/api.yaml" % (basename, version)
+                  try:
+                      with open(filepath, "r") as tmp:
+                          try:
+                              ret = yaml.full_load(tmp.read())
+                          except yaml.scanner.ScannerError as e:
+                              print(f"Bad yaml in {filepath} (2): {e}")
+                              continue
+                          newname = ret["name"].lower().replace(" ", "-", -1).replace(".", "-", -1)
+                          if newname != basename:
+                              print("Bad name: %s vs %s" % (basename, newname))
+                          if ret["app_version"] != version:
+                              print("Bad version (%s): %s vs %s" % (basename, version, ret["app_version"]))
+                          if "svg" in ret["large_image"]:
+                              print("Unsupported large_image format: svg")
+                          #else:
+                          #    print("%s:%s is valid" % (basename, version))
+                  except (NotADirectoryError, FileNotFoundError) as e:
+                      #print("Error inner file: %s" % e)
+                      pass
+              try:
+                  subfolders = os.listdir(f"{basedir}/{basename}")
+              except:
