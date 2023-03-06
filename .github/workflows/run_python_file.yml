@@ -19,7 +19,7 @@ jobs:
           pip install pyyaml
       - name: Analyze API and Python files
         run: |
-          python script.py                       :# python_file_name_to_be_checked
+          python analyze.py                       :# python_file_name_to_be_checked
       - name: Run Python script
         run: |
           import yaml
